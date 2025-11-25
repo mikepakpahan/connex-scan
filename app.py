@@ -2,13 +2,9 @@ import sys
 import os
 
 if getattr(sys, 'frozen', False):
-    # Cek apakah 'wastafel' (stdout) kita beneran 'None' (hilang)
-    # Ini biasanya terjadi kalo pake mode --noconsole atau --windowed
     if sys.stdout is None:
-        # Kalo ilang, kita alihin 'curhatan' ke 'lubang hitam'
         sys.stdout = open(os.devnull, 'w')
     if sys.stderr is None:
-        # Sama buat 'curhatan' error
         sys.stderr = open(os.devnull, 'w')
 
 import eel
@@ -18,17 +14,59 @@ import re
 import threading
 import netifaces
 import speedtest
+import mysql.connector
 
-# Inisialisasi Eel dengan folder 'web'
+DB_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': '',
+    'database': 'db_jaringan'
+}
+
 eel.init('web')
 
-# Variabel global untuk mengontrol thread ping
 ping_process = None
 ping_thread = None
 is_pinging = False
 
-# ... (Fungsi parse_ping_output, run_ping, start_ping_thread, stop_ping_thread, get_default_gateway... SAMA SEPERTI SEBELUMNYA) ...
-# ... (Saya tidak akan salin ulang fungsi yang sama persis ya, Mike) ...
+def get_db_connection():
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        return conn
+    except Exception as e:
+        print(f"Duh, gagal konek ke database: {e}")
+        return None
+
+@eel.expose
+def simpan_riwayat(download, upload):
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor()
+        query = "INSERT INTO riwayat_speedtest (download, upload) VALUES (%s, %s)"
+        cursor.execute(query, (download, upload))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("Data berhasil disimpan ke kenangan abadi (Database).")
+        return True
+    return False
+
+@eel.expose
+def ambil_riwayat():
+    conn = get_db_connection()
+    data = []
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM riwayat_speedtest ORDER BY waktu DESC LIMIT 10")
+        data = cursor.fetchall()
+    
+        for row in data:
+            if row['waktu']:
+                row['waktu'] = str(row['waktu']) 
+        
+        cursor.close()
+        conn.close()
+    return data
 
 def parse_ping_output(line):
     line = line.decode('utf-8', errors='ignore')
@@ -107,27 +145,28 @@ def get_default_gateway():
         print(f"Gagal mendeteksi gateway: {e}")
         return None
 
-# --- FUNGSI BARU UNTUK SPEEDTEST ---
 @eel.expose
 def run_speed_test():
     """Menjalankan tes kecepatan dan mengembalikan hasil (Mbps)."""
     try:
         print("Memulai speedtest...")
-        eel.update_speedtest_status("Mencari server terbaik...") # Kirim status ke JS
+        eel.update_speedtest_status("Mencari server terbaik...") 
         
         st = speedtest.Speedtest()
-        st.get_best_server() # Cari server terdekat
+        st.get_best_server()
         
         print("Memulai tes download...")
         eel.update_speedtest_status("Tes Download...")
-        download_speed = st.download() / 1024 / 1024  # Konversi ke Mbps
+        download_speed = st.download() / 1024 / 1024 
         
         print("Memulai tes upload...")
         eel.update_speedtest_status("Tes Upload...")
-        upload_speed = st.upload() / 1024 / 1024  # Konversi ke Mbps
+        upload_speed = st.upload() / 1024 / 1024
         
         print(f"Download: {download_speed:.2f} Mbps, Upload: {upload_speed:.2f} Mbps")
         eel.update_speedtest_status("Selesai!")
+
+        simpan_riwayat(download_speed, upload_speed)
 
         return {
             "download": download_speed,
@@ -137,15 +176,11 @@ def run_speed_test():
         print(f"Error saat speedtest: {e}")
         eel.update_speedtest_status(f"Error: {e}")
         return None
-# --- AKHIR FUNGSI BARU ---
 
-
-# Memulai aplikasi Eel
 print("Membuka aplikasi... Buka http://localhost:8000/index.html di browser jika tidak terbuka otomatis.")
 try:
-    eel.start('index.html', size=(1300, 800), port=8000) # <- Ukurannya kita lebarkan
+    eel.start('index.html', size=(1300, 800), port=8000)
 except (SystemExit, MemoryError, KeyboardInterrupt):
-    # Handle exit
     if is_pinging:
         stop_ping_thread()
     sys.exit()

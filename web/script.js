@@ -1,3 +1,39 @@
+document.addEventListener("DOMContentLoaded", () => {
+  loadHistory();
+});
+
+async function loadHistory() {
+  const tableBody = document.getElementById("history-table-body");
+  // Panggil fungsi Python 'ambil_riwayat'
+  const data = await eel.ambil_riwayat()();
+
+  if (data && data.length > 0) {
+    tableBody.innerHTML = ""; // Bersihkan tabel lama
+
+    data.forEach((row) => {
+      // Format waktu biar ganteng dikit
+      const dateObj = new Date(row.waktu);
+      const dateStr = dateObj.toLocaleString("id-ID"); // Format Indo
+
+      // Tentukan status puitis berdasarkan kecepatan
+      let statusBadge = "";
+      if (row.download > 50) statusBadge = '<span class="text-green-400">🚀 Melaju Kencang</span>';
+      else if (row.download > 10) statusBadge = '<span class="text-yellow-400">🚶 Santai Saja</span>';
+      else statusBadge = '<span class="text-red-400">🥀 Sedang Rapuh</span>';
+
+      const tr = `
+                <tr class="bg-gray-900 border-b border-gray-700 hover:bg-gray-800 transition">
+                    <td class="px-6 py-4">${dateStr}</td>
+                    <td class="px-6 py-4 font-bold text-white">${row.download.toFixed(2)}</td>
+                    <td class="px-6 py-4">${row.upload.toFixed(2)}</td>
+                    <td class="px-6 py-4">${statusBadge}</td>
+                </tr>
+            `;
+      tableBody.innerHTML += tr;
+    });
+  }
+}
+
 // === KONFIGURASI SPIDOMETER (GAUGE) ===
 const gaugeOptions = {
   width: 200,
@@ -208,6 +244,7 @@ speedtestBtn.addEventListener("click", async () => {
       downloadGauge.value = results.download.toFixed(2);
       uploadGauge.value = results.upload.toFixed(2);
       speedtestStatus.innerText = `Hasil: ${results.download.toFixed(2)} / ${results.upload.toFixed(2)} Mbps`;
+      loadHistory();
     } else {
       speedtestStatus.innerText = "Tes Gagal.";
     }

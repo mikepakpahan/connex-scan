@@ -88,6 +88,32 @@
           </div>
         </div>
       </div>
+
+      <div class="mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-teal-400">Jejak Waktu (History)</h2>
+          <button onclick="loadHistory()" class="text-sm text-blue-400 hover:text-blue-300 underline">Refresh Data</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-gray-400">
+            <thead class="text-xs text-gray-200 uppercase bg-gray-800">
+              <tr>
+                <th class="px-6 py-3">Waktu</th>
+                <th class="px-6 py-3">Download (Mbps)</th>
+                <th class="px-6 py-3">Upload (Mbps)</th>
+                <th class="px-6 py-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <tr>
+                <td colspan="4" class="text-center py-4">Belum ada jejak yang tertinggal...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Akhir Grid -->
     </div>
     <script src="script.js"></script>
