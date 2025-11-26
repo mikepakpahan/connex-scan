@@ -34,6 +34,13 @@ async function loadHistory() {
   }
 }
 
+async function hapusHistory() {
+  if (confirm("Yakin ingin melupakan semua kenangan indah ini? (Data akan hilang permanen)")) {
+    await eel.hapus_semua_riwayat()();
+    loadHistory();
+  }
+}
+
 // === KONFIGURASI SPIDOMETER (GAUGE) ===
 const gaugeOptions = {
   width: 200,
@@ -160,11 +167,18 @@ function update_chart_data(latency) {
   updateDynamicYAxis();
   heartbeatChart.update("quiet");
   checkPoeticAlert(latency);
+  addPingLog(latency);
 }
 
 function checkPoeticAlert(latency) {
+  // --- PENGAMAN ---
+  // Kalau elemennya gak ada, mending diem aja daripada bikin error
+  if (!poeticAlert) return;
+  // ----------------
+
   clearTimeout(alertTimeout);
   poeticAlert.classList.add("opacity-0");
+
   let message = "";
   if (latency > 200) message = "Napas jaringanmu sedang sesak...";
   else if (latency > 100) message = "Jaringanmu sedang menghela napas...";
@@ -229,7 +243,7 @@ speedtestBtn.addEventListener("click", async () => {
 
   // Reset UI
   speedtestBtn.disabled = true;
-  speedtestBtn.innerText = "Mengukur...";
+  speedtestBtn.innerText = "Running...";
   speedtestBtn.classList.replace("bg-teal-600", "bg-gray-500");
   downloadGauge.value = 0;
   uploadGauge.value = 0;
@@ -259,3 +273,47 @@ speedtestBtn.addEventListener("click", async () => {
   speedtestBtn.classList.replace("bg-gray-500", "bg-teal-600");
   togglePingBtn.disabled = false; // Nyalakan lagi tombol ping
 });
+
+const pingConsole = document.getElementById("ping-console");
+
+function addPingLog(latency) {
+  if (!pingConsole) {
+    console.warn("Waduh, elemen 'ping-console' gak ketemu nih!");
+    return;
+  }
+
+  // 1. Bikin elemen baris baru
+  const logLine = document.createElement("div");
+
+  // 2. Bikin Timestamp (Jam:Menit:Detik)
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("id-ID", { hour12: false });
+
+  // 3. Tentukan warna berdasarkan kecepatan (Biar makin informatif)
+  let colorClass = "text-green-400"; // Default Hijau (Ngebut)
+  let statusText = "OK";
+
+  if (latency > 100) {
+    colorClass = "text-yellow-400"; // Kuning (Hati-hati)
+    statusText = "LAG";
+  }
+  if (latency > 200) {
+    colorClass = "text-red-500"; // Merah (Bahaya)
+    statusText = "SLOW";
+  }
+
+  // 4. Susun isi teksnya ala CMD Windows / Terminal Linux
+  logLine.className = `${colorClass} hover:bg-gray-900 px-1`;
+  logLine.innerHTML = `<span class="text-gray-600">[${timeStr}]</span> Reply from target: time=${latency.toFixed(1)}ms <span class="font-bold border border-gray-700 text-[10px] px-1 ml-2 rounded">${statusText}</span>`;
+
+  // 5. Masukin ke kotak console
+  pingConsole.appendChild(logLine);
+
+  // 6. AUTO SCROLL KE BAWAH (PENTING!)
+  // Biar user gak perlu scroll manual buat liat yang terbaru
+  pingConsole.scrollTop = pingConsole.scrollHeight;
+}
+
+function clearConsole() {
+  pingConsole.innerHTML = '<div class="text-gray-500 italic">>> Console dibersihkan.</div>';
+}

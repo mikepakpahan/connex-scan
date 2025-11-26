@@ -43,19 +43,19 @@
           <h2 class="text-xl font-semibold text-center mb-4">Tes Lari Jaringan</h2>
 
           <!-- Spidometer Download -->
-          <div class="w-full flex justify-center">
+          <div class="w-full flex justify-center mb-4">
             <canvas id="gauge-download"></canvas>
           </div>
           <p class="text-center text-sm text-gray-400 -mt-4 mb-2">Download (Mbps)</p>
 
           <!-- Spidometer Upload -->
-          <div class="w-full flex justify-center mt-2">
+          <div class="w-full flex justify-center mt-2 mb-4">
             <canvas id="gauge-upload"></canvas>
           </div>
           <p class="text-center text-sm text-gray-400 -mt-4 mb-4">Upload (Mbps)</p>
 
           <!-- Tombol & Status Speedtest -->
-          <button id="speedtest-btn" class="w-full p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-medium transition duration-200">Mulai Tes Lari</button>
+          <button id="speedtest-btn" class="w-full p-2 bg-teal-600 hover:bg-teal-700 rounded-md font-medium transition duration-200">GO</button>
           <p id="speedtest-status" class="text-center text-sm text-gray-400 h-5 mt-2"></p>
         </div>
 
@@ -77,22 +77,30 @@
             </div>
           </div>
 
-          <!-- Area Grafik Latency -->
-          <div class="bg-gray-900 p-4 rounded-lg chart-glow">
+          <div class="bg-gray-900 p-4 rounded-lg chart-glow mb-4">
             <canvas id="heartbeatChart"></canvas>
           </div>
 
-          <!-- Peringatan Puitis -->
-          <div id="poetic-alert" class="text-center mt-4 h-6 text-teal-300 font-light transition-opacity duration-500 opacity-0">
-            <!-- Pesan akan muncul di sini -->
+          <div class="bg-black p-3 rounded-lg border border-gray-700 shadow-inner">
+            <div class="flex justify-between items-center mb-2 border-b border-gray-800 pb-1">
+              <span class="text-xs text-gray-500 font-mono">SYSTEM LOG // REALTIME PING</span>
+              <button onclick="clearConsole()" class="text-xs text-red-500 hover:text-red-400 font-mono">[CLEAR]</button>
+            </div>
+
+            <div id="ping-console" class="h-32 overflow-y-auto font-mono text-xs space-y-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+              <div class="text-gray-500 italic">>> Menunggu perintah ping...</div>
+            </div>
+
+            <div id="poetic-alert" class="text-center text-teal-300 font-mono text-sm h-6 mt-2 transition-opacity duration-500 opacity-0"></div>
           </div>
         </div>
       </div>
 
       <div class="mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold text-teal-400">Jejak Waktu (History)</h2>
+          <h2 class="text-xl font-semibold text-teal-400">History</h2>
           <button onclick="loadHistory()" class="text-sm text-blue-400 hover:text-blue-300 underline">Refresh Data</button>
+          <button onclick="hapusHistory()" class="text-sm text-red-400 hover:text-red-300 underline ml-4">Hapus history</button>
         </div>
 
         <div class="overflow-x-auto">
@@ -107,15 +115,19 @@
             </thead>
             <tbody id="history-table-body">
               <tr>
-                <td colspan="4" class="text-center py-4">Belum ada jejak yang tertinggal...</td>
+                <td colspan="4" class="text-center py-4">Belum ada history speedtest</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Akhir Grid -->
+      <footer class="text-center text-gray-500 text-xs mt-8 pb-4">
+        <p>Dibuat dengan ❤️ dan ☕ oleh <span class="text-teal-400 font-bold">Kelompok 4 Kom B2'23</span></p>
+        <p class="mt-1">Project E-Application 2025 - Teknik Informatika USU</p>
+      </footer>
     </div>
+
     <script src="script.js"></script>
   </body>
 </html>

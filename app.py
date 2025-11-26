@@ -52,6 +52,18 @@ def simpan_riwayat(download, upload):
     return False
 
 @eel.expose
+def hapus_semua_riwayat():
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("TRUNCATE TABLE riwayat_speedtest") # Hapus bersih sampai ke akar
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    return False
+
+@eel.expose
 def ambil_riwayat():
     conn = get_db_connection()
     data = []
